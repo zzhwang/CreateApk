@@ -1,0 +1,145 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>自动签名环境配置</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><p></p><div class="toc"><h3>文章目录</h3><ul><ul><ul><li><a href="#_1">环境配置</a></li><ul><li><a href="#1_JavaJDK_2">1. 配置Java环境变量（JDK）</a></li><li><a href="#2_SDK_29">2. 配置SDK环境变量</a></li><li><a href="#3_APK_81">3. APK签名相关命令</a></li><ul><li><a href="#_113">文档更新日志</a></li></ul></ul></ul></ul></ul></div><p></p>
+<h3><a id="_1"></a>环境配置</h3>
+<h4><a id="1_JavaJDK_2"></a>1. 配置Java环境变量（JDK）</h4>
+<ol>
+<li>jdk版本选择java8，下载页面:<a href="https://www.oracle.com/technetwork/java/javase/downloads/index.html">jdk下载</a></li>
+<li>配置JAVA_HOME<br>
+请在环境变量中配置JDK的环境变量，首先，<code>JAVA_HOME</code>变量配置为JDK的安装目录，例如我的环境变量为：</li>
+</ol>
+<pre><code>export JAVA_HOME=/home/txs/tools/jdk1.8.0_161
+</code></pre>
+<ol start="3">
+<li>配置其它必要环境变量<br>
+配置好JAVA_HOME之后，其它环境变量配置如下（仅限java8版本,以我的Linux环境配置为例）:</li>
+</ol>
+<pre><code>#配置JRE，即JDK安装目录下的jre文件夹的bin目录
+export JRE_HOME=$JAVA_HOME/jre
+export PATH=$PATH:$JRE_HOME/bin
+#Java环境变量 即JDK安装目录下的bin文件夹
+export PATH=$JAVA_HOME/bin:$PATH
+#CLASSPATH变量，指向JDK安装目录下lib目录里面的两个JAR包
+export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar:$CLASSPATH
+</code></pre>
+<ol start="4">
+<li>测试环境变量是否成功<br>
+<code>source</code>命令之后或者重启之后，打开命令行，输入<code>java</code>命令，测试是否有此命令。上一步测试成功后，在命令行输入<code>javac</code>命令，测试是否有次命令的输出。然后检查jdk版本，输入<code>java -version</code>命令，输出类似下面：</li>
+</ol>
+<pre><code>txs@txs-PC:~$ java -version
+Picked up _JAVA_OPTIONS:   -Dawt.useSystemAAFontSettings=gasp
+java version "1.8.0_161"
+Java(TM) SE Runtime Environment (build 1.8.0_161-b12)
+Java HotSpot(TM) 64-Bit Server VM (build 25.161-b12, mixed mode)
+</code></pre>
+<h4><a id="2_SDK_29"></a>2. 配置SDK环境变量</h4>
+<ol>
+<li>sdk下载地址：<a href="https://developer.android.com/studio/index.html?hl=zh-cn">SDK下载(需要翻墙)</a><br>
+下载此工具：<br>
+<img src="https://img-blog.csdnimg.cn/20190718110846865.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3Nvbmd0YW5neHVl,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></li>
+<li>使用sdkmanager安装platform-tools<br>
+解压第1步下载的sdk-tools，在<code>tools/bin</code>目录下查看是否有<code>sdkmanager</code>，如果有<code>sdkmanager</code>，则应该安装<code>platform-tools</code>，命令如下：</li>
+</ol>
+<pre><code>./sdkmanager "platform-tools" 
+</code></pre>
+<p>若执行正常，会多出一个platform-tools文件夹，里面包含adb等命令.</p>
+<ol start="3">
+<li>使用sdkmanager安装build-tools<br>
+以build-tools-29为例，命令如下:</li>
+</ol>
+<pre><code>./sdkmanager "build-tools;29.0.0"
+</code></pre>
+<p>例如我电脑的执行结果如下:</p>
+<pre><code>txs@txs-PC:~/superTools/tools/bin$ ./sdkmanager "build-tools;29.0.0"
+Picked up _JAVA_OPTIONS:   -Dawt.useSystemAAFontSettings=gasp
+Warning: File /home/txs/.android/repositories.cfg could not be loaded.          
+[=======================================] 100% Unzipping... android-10/lib64/lib
+</code></pre>
+<p>若执行正常，会多出一个<code>build-tools</code>文件夹，里面包含<code>apksigner</code>等命令.</p>
+<ol start="4">
+<li>配置Android环境变量，ANDROID_HOME<br>
+配置<code>ANDROID_HOME</code>环境变量为<code>sdk</code>的安装目录，例如我的目录结构为：</li>
+</ol>
+<pre><code>txs@txs-PC:~/tools/android-sdk-linux$ ls
+ add-ons       emulator   licenses   ndk-bundle   platform-tools    system-images
+ build-tools   extras     lldb       patcher     'SDK Readme.txt'   tools
+ cmake         fonts      ndk        platforms    skins
+</code></pre>
+<p>其中，<code>tools</code>目录为我们第一步所下载的<code>sdk-tools</code>，<code>platform-tools</code>为我们第二步操作所生成的文件夹，<code>build-tools</code>为我们第三步操作所生成的文件夹.<br>
+所以，<code>ANDROID_HOME</code>环境变量为(以我的Linux系统以及目录结构为例，请根据自己的目录结构配置相关变量的位置)：</p>
+<pre><code>export ANDROID_HOME=/home/txs/tools/android-sdk-linux
+</code></pre>
+<ol start="5">
+<li>配置SDK的其它环境变量<br>
+配置好<code>ANDROID_HOME</code>后，接下来配置如下环境变量：</li>
+</ol>
+<pre><code>export PATH=$PATH:$ANDROID_HOME/tools/bin
+export PATH=$PATH:$ANDROID_HOME/tools
+export PATH=$PATH:$ANDROID_HOME/platform-tools
+</code></pre>
+<ol start="6">
+<li>配置签名环境<br>
+APK签名使用<code>apksigner</code>进行V2签名，<code>apksigner</code>在<code>build-tools</code>的相关文件夹下，以<code>build-tools-29.0.0</code>为例，配置其环境变量为：</li>
+</ol>
+<pre><code>#aapt apksigner
+export PATH=$PATH:/home/txs/tools/android-sdk-linux/build-tools/29.0.0
+</code></pre>
+<p>配置完环境变量请及时<code>source</code>或重启进行验证.</p>
+<h4><a id="3_APK_81"></a>3. APK签名相关命令</h4>
+<p>执行此步骤之前，请确认环境变量已配置成功。</p>
+<ol>
+<li>生成签名文件 <code>keystore</code>，以生成<code>hehe.jks</code>为例:</li>
+</ol>
+<pre><code>keytool -genkeypair -alias hehe -keyalg RSA -validity 2000 -keystore hehe.jks
+</code></pre>
+<p>选项说明如下。</p>
+<blockquote>
+<p>-genkeypair:指定生成数字证书。<br>
+-alias:指定生成数字证书的别名。<br>
+-keyalg:指定生成数字证书的算法。使用RSA算法。<br>
+-validity:指定生成的数字证书的有效期。<br>
+-keystore:指定所生成的数字证书的存储路径。</p>
+</blockquote>
+<p>输入上面命令后按回车键，将会出现交互式方式让用户输入密码，公司等详细信息。</p>
+<ol start="2">
+<li>压缩</li>
+</ol>
+<pre><code>zipalign -v -p 4 '/home/txs/tools/apktool/outdir/dist/app-release.apk'  out.apk
+</code></pre>
+<p>此命令意义为将<code>app-release.apk</code>执行压缩操作，压缩后的apk为<code>out.apk</code>.</p>
+<ol start="3">
+<li>签名</li>
+</ol>
+<pre><code>apksigner sign --ks '/home/txs/mdht/hehe.jks' --ks-pass pass:123456 --out /home/txs/tools/apktool/signd.apk '/home/txs/tools/android-sdk-linux/build-tools/28.0.2/out.apk'
+</code></pre>
+<p>此命令意义为使用<code>apksigner</code>将<code>out.apk</code>使用<code>hehe.jks</code>签名文件，其密码为<code>123456</code>，签名为<code>signd.apk</code>.</p>
+<h5><a id="_113"></a>文档更新日志</h5>
+
+<table>
+<thead>
+<tr>
+<th>日期</th>
+<th>版本</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2019-07-18</td>
+<td>v1.0</td>
+<td>–</td>
+</tr>
+</tbody>
+</table></div>
+</body>
+
+</html>
